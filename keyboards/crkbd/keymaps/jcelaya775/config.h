@@ -21,18 +21,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 //#define USE_MATRIX_I2C
-
-#define TAPPING_TERM 200
-// #define TAPPING_TERM_PER_KEY
+#define HOLD_ON_OTHER_KEY_PRESS
+/* #define HOLD_ON_OTHER_KEY_PRESS_PER_KEY */
+#define RETRO_TAPPING //
+/* #define PERMISSIVE_HOLD // useful for fast typing & avoiding accidental shortcuts, but incompatible w/ HOLD_ON_OTHER_KEY_PRESS */
+/* #define TAPPING_TERM 400 */
+// NOTE: With HOLD_ON_OTHER_KEY_PRESS and RETRO_TAPPING enabled, TAPPING_TERM becomes useless
+//  - TAPPING_TERM is really only useful imo if you only want to press the modifier key alone (like GUI)
+//  - But with PERMISSIVE_HOLD and RETRO_TAPPING,
 
 /* Select hand configuration */
 
 #define MASTER_LEFT
 // #define MASTER_RIGHT
 // #define EE_HANDS
-
-// #define QUICK_TAP_TERM 250
-// #define TAPPING_TERM 250
 
 #ifdef RGBLIGHT_ENABLE
     #define RGBLIGHT_EFFECT_BREATHING

@@ -18,7 +18,11 @@
 //
 // // TODO: qk_tap_dance_state_t is an undefined type
 // uint8_t dance_step(qk_tap_dance_state_t *state);
-//
+
+// bool caps_lock_is_enabled(void) {
+//     return keymap_is_active(KC_CAPSLOCK);
+// }
+
 // uint8_t dance_step(qk_tap_dance_state_t *state) {
 //     if (state->count == 1) {
 //         if (state->interrupted || !state->pressed) return SINGLE_TAP;
@@ -31,7 +35,7 @@
 //     }
 //     return MORE_TAPS;
 // }
-//
+
 // void on_dance_0(qk_tap_dance_state_t *state, void *user_data);
 // void dance_0_finished(qk_tap_dance_state_t *state, void *user_data);
 // void dance_0_reset(qk_tap_dance_state_t *state, void *user_data);
@@ -46,7 +50,7 @@
 //         tap_code16(KC_CAPS);
 //     }
 // }
-//
+
 // void dance_0_finished(qk_tap_dance_state_t *state, void *user_data) {
 //     dance_state[0].step = dance_step(state);
 //     switch (dance_state[0].step) {
@@ -54,7 +58,7 @@
 //         case DOUBLE_TAP: register_code16(KC_CAPS); register_code16(KC_CAPS); break;
 //     }
 // }
-//
+
 // void dance_0_reset(qk_tap_dance_state_t *state, void *user_data) {
 //     wait_ms(10);
 //     switch (dance_state[0].step) {
@@ -67,7 +71,7 @@
 // qk_tap_dance_action_t tap_dance_actions[] = {
 //     [DANCE_0] = ACTION_TAP_DANCE_FN_ADVANCED(on_dance_0, dance_0_finished, dance_0_reset)
 // }
-//
+
 // bool caps_word_press_user(uint16_t keycode) {
 //     switch (keycode) {
 //         // Keycodes that continue Caps Word, with shift applied.
@@ -99,6 +103,11 @@
 //     [TD_CW_TOGG_CAPS] = ACTION_TAP_DANCE_DOUBLE(CW_TOGG, KC_CAPS),
 // };
 
+// TODO:
+//  - [ ] Try (and enable) tap dance for gui/cw_togg
+//  - [x] Try gui/quote again, but this time, disable HOLD_ON_OTHER_KEY_PRESS for only this key
+//  - [ ] Consider cmd+escape for super key (need to enable COMBO_ENABLE)
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // default layer
     [0] = LAYOUT_split_3x6_3(
@@ -107,21 +116,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,              KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, SC_SENT,
          KC_LCTL, MT(MOD_LGUI, KC_ENT), MO(1),              MO(2), KC_SPC, KC_LALT
     ),
-    // symbol layer
+    // lower layer
     [1] = LAYOUT_split_3x6_3(
-        KC_CAPS, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,              KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
+        CW_TOGG, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,              KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
         KC_LCTL, KC_1,    KC_2,  KC_3,    KC_4,   KC_5,                 KC_TILD, KC_MINS, KC_EQL,  KC_LCBR, KC_RCBR, KC_BSLS,
         KC_LSFT, KC_6,    KC_7,  KC_8,    KC_9,   KC_0,                 KC_GRV,  KC_UNDS, KC_PLUS, KC_LBRC, KC_RBRC, SC_SENT,
-                                   KC_NO, KC_NO, KC_NO,                 CW_TOGG, KC_SPC,  KC_LALT
+                                   KC_NO, KC_NO, KC_NO,                 MT(MOD_LGUI, CW_TOGG), KC_SPC,  KC_LALT
+                                                                        // TODO: Make it so that KC_CAPS is still held when MO(1) is released
     ),
-    // function layer
+    // higher layer
     [2] = LAYOUT_split_3x6_3(
         KC_TAB,  KC_F1, KC_F2, KC_F3,   KC_F4,   KC_F5,        KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10, KC_F11,
-        KC_LALT, TG(3), KC_NO, KC_VOLD, KC_VOLU, KC_MUTE,      KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_NO,  KC_F12,
-        KC_LSFT, TG(4), KC_NO, KC_MPRV, KC_MNXT, KC_MPLY,      KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_NO,  SC_SENT,
-                                KC_LCTL, KC_ENT, KC_LGUI,      KC_NO, KC_NO, KC_NO
+        KC_LALT, KC_BRID, KC_BRIU, KC_VOLD, KC_VOLU, KC_MUTE,  KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_NO,  KC_F12,
+        KC_LSFT, KC_NO, KC_NO, KC_MPRV, KC_MNXT, KC_MPLY,      KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_NO,  SC_SENT,
+                  KC_LCTL, MT(MOD_LGUI, KC_ENT), KC_LGUI,      KC_NO, KC_NO, KC_NO
     ),
-    // number-pad layer
+    // number-pad layer (disabled for now)
     [3] = LAYOUT_split_3x6_3(
         KC_TAB,  TG(3), KC_NO,   KC_NO,   KC_NO,   QK_BOOT,         KC_ASTR, KC_7, KC_8, KC_9, KC_SLSH, KC_BSPC,
         KC_ESC,  KC_NO, RGB_HUI, RGB_SAI, RGB_VAI, RGB_TOG,         KC_PLUS, KC_4, KC_5, KC_6, KC_MINS, KC_ENT,
@@ -130,9 +140,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
+// TODO: if MO(2) > MT(LT(1), KC_LGUI) -> change MO(2) to KC_LGUI
+//
+//  - So you don't have to think about the order of the layers
+
 // Initialize variable holding the binary
 // representation of active modifiers.
 uint8_t mod_state;
+bool caps_lock_on = false;
 bool    process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Store the current modifier state in the variable for later reference
     mod_state = get_mods();
@@ -166,6 +181,25 @@ bool    process_record_user(uint16_t keycode, keyrecord_t *record) {
             // Let QMK process the KC_BSPC keycode as usual outside of shift
             return true;
         }
+        case MT(MOD_LGUI, CW_TOGG):
+            if (record->event.pressed) {
+                switch (record->tap.count) {
+                    case 1:
+                        if (caps_lock_on) {
+                            tap_code16(KC_CAPS);
+                            caps_lock_on = false;
+                        } else {
+                            caps_word_toggle();
+                        }
+                        return false;
+                    case 2:
+                        tap_code16(KC_CAPS);
+                        caps_lock_on = true;
+                        return false;
+                }
+            }
+            break;
+
     }
     return true;
 };
