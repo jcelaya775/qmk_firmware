@@ -16,7 +16,6 @@
 //     DANCE_0,
 // };
 //
-// // TODO: qk_tap_dance_state_t is an undefined type
 // uint8_t dance_step(qk_tap_dance_state_t *state);
 
 // bool caps_lock_is_enabled(void) {
@@ -104,8 +103,7 @@
 // };
 
 // TODO:
-//  - [ ] Try (and enable) tap dance for gui/cw_togg
-//  - [x] Try gui/quote again, but this time, disable HOLD_ON_OTHER_KEY_PRESS for only this key
+//  - [x] Try (and enable) tap dance for gui/cw_togg
 //  - [ ] Consider cmd+escape for super key (need to enable COMBO_ENABLE)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -118,18 +116,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     // lower layer
     [1] = LAYOUT_split_3x6_3(
-        CW_TOGG, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,              KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
+        KC_LGUI, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,              KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_DEL,
         KC_LCTL, KC_1,    KC_2,  KC_3,    KC_4,   KC_5,                 KC_TILD, KC_MINS, KC_EQL,  KC_LCBR, KC_RCBR, KC_BSLS,
         KC_LSFT, KC_6,    KC_7,  KC_8,    KC_9,   KC_0,                 KC_GRV,  KC_UNDS, KC_PLUS, KC_LBRC, KC_RBRC, SC_SENT,
-                                   KC_NO, KC_NO, KC_NO,                 MT(MOD_LGUI, CW_TOGG), KC_SPC,  KC_LALT
-                                                                        // TODO: Make it so that KC_CAPS is still held when MO(1) is released
+                                   KC_NO, KC_NO, KC_LGUI,                 MT(MOD_LGUI, CW_TOGG), KC_SPC,  KC_LALT
     ),
     // higher layer
     [2] = LAYOUT_split_3x6_3(
         KC_TAB,  KC_F1, KC_F2, KC_F3,   KC_F4,   KC_F5,        KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10, KC_F11,
         KC_LALT, KC_BRID, KC_BRIU, KC_VOLD, KC_VOLU, KC_MUTE,  KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_NO,  KC_F12,
         KC_LSFT, KC_NO, KC_NO, KC_MPRV, KC_MNXT, KC_MPLY,      KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_NO,  SC_SENT,
-                  KC_LCTL, MT(MOD_LGUI, KC_ENT), KC_LGUI,      KC_NO, KC_NO, KC_NO
+                  KC_LCTL, MT(MOD_LGUI, KC_ENT), MO(1),      KC_NO, KC_NO, KC_NO
     ),
     // number-pad layer (disabled for now)
     [3] = LAYOUT_split_3x6_3(
@@ -140,15 +137,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-// TODO: if MO(2) > MT(LT(1), KC_LGUI) -> change MO(2) to KC_LGUI
-//
-//  - So you don't have to think about the order of the layers
-
 // Initialize variable holding the binary
 // representation of active modifiers.
 uint8_t mod_state;
 bool caps_lock_on = false;
-bool    process_record_user(uint16_t keycode, keyrecord_t *record) {
+
+bool is_mo2_held = false;  // Flag to track if MO(2) is held
+bool is_layer1_active = false;  // Flag to track if layer 1 is active
+bool is_mo_lgui_active = false;  // Flag to track if MO(2) + LGUI is active
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Store the current modifier state in the variable for later reference
     mod_state = get_mods();
     switch (keycode) {
@@ -198,11 +196,45 @@ bool    process_record_user(uint16_t keycode, keyrecord_t *record) {
                         return false;
                 }
             }
-            break;
+        case MO(2):
+            if (record->event.pressed) {
+                is_mo2_held = true;
+            } else {
+                is_mo2_held = false;
+            }
+           return true; // Allow normal MO(2) processing
+        case MO(1):
+            if (record->event.pressed) {
+                is_layer1_active = true;
+                layer_on(1);
+                if (is_mo2_held) {
+                    layer_off(2);
+                    is_mo_lgui_active = true;
+                    register_mods(MOD_LGUI);
+                }
+            } else {
+                if (is_layer1_active) {
+                    layer_off(1);
+                    unregister_mods(MOD_LGUI); // Release LGUI modifier
+                    is_layer1_active = false;
+                    is_mo_lgui_active = false;
+                }
+            }
+            return false; // Prevent normal MO(1) processing
 
+            break;
     }
     return true;
 };
+
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case MT(MOD_LGUI, CW_TOGG):
+            return 1000;
+        default:
+            return TAPPING_TERM;
+    }
+}
 
 // bool caps_word_press_user(uint16_t keycode) {
 //     switch (keycode) {
