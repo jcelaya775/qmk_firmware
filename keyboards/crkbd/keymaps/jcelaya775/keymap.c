@@ -2,7 +2,6 @@
 
 // TODO:
 //  - [ ] Consider cmd+escape for super key (need to enable COMBO_ENABLE)
-//  - [ ] Fix shift+delete for mac (so that it doesn't register shift+delete, but just delete)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // default layer
@@ -14,7 +13,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     // lower layer
     [1] = LAYOUT_split_3x6_3(
-        KC_LGUI, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,              KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_DEL,
+        KC_TAB, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,              KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
         KC_LCTL, KC_1,    KC_2,  KC_3,    KC_4,   KC_5,                 KC_TILD, KC_MINS, KC_EQL,  KC_LCBR, KC_RCBR, KC_BSLS,
         KC_LSFT, KC_6,    KC_7,  KC_8,    KC_9,   KC_0,                 KC_GRV,  KC_UNDS, KC_PLUS, KC_LBRC, KC_RBRC, SC_SENT,
                                    KC_NO, KC_NO, KC_LGUI,                 MT(MOD_LGUI, CW_TOGG), KC_SPC,  MT(MOD_LALT, MOD_LGUI)
@@ -35,6 +34,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
+// TODO: Move some of these variables closer to where they are used
 uint8_t mod_state;
 bool caps_lock_on = false;
 bool is_mo2_held = false;  // Flag to track if MO(2) is held
@@ -48,26 +48,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     mod_state = get_mods();
     switch (keycode) {
         case KC_BSPC: {
-            // Initialize a boolean variable that keeps track
-            // of the delete key status: registered or not?
             static bool delkey_registered;
             if (record->event.pressed) {
                 // Detect the activation of either shift keys
                 if (mod_state & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
-                    // First temporarily canceling both shifts so that
-                    // shift isn't applied to the KC_DEL keycode
-                    // TODO: Maybe use unregister_mods instead?
-                    del_mods(MOD_BIT(KC_LSFT)); // allow for right shift to be used with delete
+                    unregister_mods(MOD_LSFT);
                     register_code(KC_DEL);
-                    // Update the boolean variable to reflect the status of KC_DEL
                     delkey_registered = true;
-                    // Reapplying modifier state so that the held shift key(s)
-                    // still work even after having tapped the Backspace/Delete key.
                     set_mods(mod_state);
                     return false;
                 }
             } else { // on release of KC_BSPC
-                // In case KC_DEL is still being sent even after the release of KC_BSPC
                 if (delkey_registered) {
                     unregister_code(KC_DEL);
                     delkey_registered = false;
