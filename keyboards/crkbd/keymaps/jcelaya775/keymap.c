@@ -23,7 +23,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TAB,  KC_F1, KC_F2, KC_F3,   KC_F4,   KC_F5,        KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10, KC_F11,
         KC_LALT, KC_BRID, KC_BRIU, KC_VOLD, KC_VOLU, KC_MUTE,  KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_NO,  KC_F12,
         KC_LSFT, KC_NO, KC_NO, KC_MPRV, KC_MNXT, KC_MPLY,      KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_NO,  SC_SENT,
-                  KC_LCTL, MT(MOD_LGUI, KC_ENT), MO(1),      KC_NO, KC_NO, KC_NO
+                  MT(MOD_LCTL, MOD_LGUI), MT(MOD_LGUI, KC_ENT), MO(1),      KC_NO, KC_NO, KC_NO
     ),
     // number-pad layer (disabled for now)
     [3] = LAYOUT_split_3x6_3(
@@ -84,10 +84,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         return false;
                 }
             }
+        // TODO: Make layer 2 active when MO(1) is released
         case MO(2):
             if (record->event.pressed) {
                 is_mo2_held = true;
             } else {
+                if (is_mo2_held) {
+                    is_mo2_held = false;
+                    layer_off(2);
+                }
                 is_mo2_held = false;
             }
            return true; // Allow normal MO(2) processing
@@ -107,10 +112,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     is_layer1_active = false;
                     is_mo_lgui_active = false;
                 }
+                if (is_mo2_held) {
+                    layer_on(2);
+                }
             }
             return false; // Prevent normal MO(1) processing
         case MT(MOD_LCTL, MOD_LGUI):
-            if (layer_state_is(0)) {
+            if (layer_state_is(0) || layer_state_is(2)) {
                 if (record->event.pressed) {
                     register_mods(MOD_LCTL);
                     if (record->tap.count == 2) {
@@ -147,8 +155,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 if (!record->event.pressed) {
                     if (is_lalt_lgui_active) {
-                        unregister_mods(MOD_LALT);
                         is_lalt_lgui_active = false;
+                        unregister_mods(MOD_LALT);
                         unregister_mods(MOD_LGUI);
                     }
                 }
