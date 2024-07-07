@@ -14,7 +14,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // lower layer
     [1] = LAYOUT_split_3x6_3(
         KC_TAB, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,              KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
-        KC_LCTL, KC_1,    KC_2,  KC_3,    KC_4,   KC_5,                 KC_TILD, KC_MINS, KC_EQL,  KC_LCBR, KC_RCBR, KC_BSLS,
+        KC_LCTL, KC_1,    KC_2,  KC_3,    KC_4,   KC_5,                 KC_TILD, KC_MINS, KC_PEQL,  KC_LCBR, KC_RCBR, KC_BSLS,
         KC_LSFT, KC_6,    KC_7,  KC_8,    KC_9,   KC_0,                 KC_GRV,  KC_UNDS, KC_PLUS, KC_LBRC, KC_RBRC, SC_SENT,
                                    KC_NO, KC_NO, KC_LGUI,                 MT(MOD_LGUI, CW_TOGG), KC_SPC,  MT(MOD_LALT, MOD_LGUI)
     ),
@@ -37,11 +37,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // TODO: Move some of these variables closer to where they are used
 uint8_t mod_state;
 bool caps_lock_on = false;
-bool is_mo2_held = false;  // Flag to track if MO(2) is held
-bool is_layer1_active = false;  // Flag to track if layer 1 is active
-bool is_mo_lgui_active = false;  // Flag to track if MO(2) + LGUI is active
-bool is_lctl_lgui_active = false;  // Flag to track if LCTL + LGUI is active
-bool is_lalt_lgui_active = false;  // Flag to track if LALT + LGUI is active
+bool is_mo2_held = false;
+bool is_layer1_active = false;
+bool is_mo_lgui_active = false;
+bool is_lctl_lgui_active = false;
+bool is_lalt_lgui_active = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Store the current modifier state in the variable for later reference
@@ -79,6 +79,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         }
                         return false;
                     case 2:
+                        caps_word_toggle();
                         tap_code16(KC_CAPS);
                         caps_lock_on = true;
                         return false;
