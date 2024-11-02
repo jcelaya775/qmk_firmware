@@ -11,7 +11,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // lower layer
     [1] = LAYOUT_split_3x6_3(
         KC_TAB, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,              KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
-        KC_LCTL, KC_1,    KC_2,  KC_3,    KC_4,   KC_5,                 KC_TILD, KC_MINS, KC_PEQL,  KC_LCBR, KC_RCBR, KC_BSLS,
+        KC_LCTL, KC_1,    KC_2,  KC_3,    KC_4,   KC_5,                 KC_TILD, KC_MINS, KC_EQL,  KC_LCBR, KC_RCBR, KC_BSLS,
         KC_LSFT, KC_6,    KC_7,  KC_8,    KC_9,   KC_0,                 KC_GRV,  KC_UNDS, KC_PLUS, KC_LBRC, KC_RBRC, SC_SENT,
                                    KC_NO, KC_NO, KC_LGUI,                 MT(MOD_LGUI, CW_TOGG), KC_SPC,  MT(MOD_LALT, MOD_LGUI)
     ),
@@ -161,6 +161,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 return true;
             }
 
+            break;
+        case KC_EXLM:
+            if (record->event.pressed) {
+                SEND_STRING("!");
+            }
+            return false;
             break;
     }
     return true;
