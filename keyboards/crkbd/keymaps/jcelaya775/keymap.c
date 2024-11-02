@@ -1,8 +1,5 @@
 #include QMK_KEYBOARD_H
 
-// TODO:
-//  - [ ] Consider cmd+escape for super key (need to enable COMBO_ENABLE)
-
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // default layer
     [0] = LAYOUT_split_3x6_3(
