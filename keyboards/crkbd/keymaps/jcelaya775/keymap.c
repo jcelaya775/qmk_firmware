@@ -27,14 +27,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [3] = LAYOUT_split_3x6_3(
         KC_NO,  KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
         KC_ESC,  KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,         KC_MS_LEFT, KC_MS_DOWN, KC_MS_UP, KC_MS_RIGHT, KC_NO, KC_NO,
-        KC_NO, TG(3), KC_NO, KC_NO, KC_NO, KC_NO,         KC_NO, KC_NO, KC_NO, KC_NO,  KC_NO, KC_NO,
+        KC_LCTL, TG(3), KC_NO, KC_NO, KC_NO, KC_NO,         KC_NO, KC_NO, KC_NO, KC_NO,  KC_NO, KC_LCTL,
                                   KC_LCTL, KC_MS_BTN1, KC_NO,         MO(4), KC_MS_BTN1, KC_MS_BTN2
     ),
     // mouse scroll wheel layer
     [4] = LAYOUT_split_3x6_3(
         KC_NO,  KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
         KC_ESC,  KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,         KC_MS_WH_LEFT, KC_MS_WH_DOWN, KC_MS_WH_UP, KC_MS_WH_RIGHT, KC_NO, KC_NO,
-        KC_NO, TG(3), KC_NO, KC_NO, KC_NO, KC_NO,           KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_LCTL, TG(3), KC_NO, KC_NO, KC_NO, KC_NO,           KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_LCTL,
                                   KC_LCTL, KC_MS_BTN1, KC_NO,         KC_NO, KC_MS_BTN1, KC_MS_BTN2
     ),
     /* // mouse layer */
@@ -60,6 +60,9 @@ bool is_layer1_active = false;
 bool is_mo_lgui_active = false;
 bool is_lctl_lgui_active = false;
 bool is_lalt_lgui_active = false;
+
+bool to3_override_active = false;
+
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Store the current modifier state in the variable for later reference
@@ -110,7 +113,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 if (is_mo2_held) {
                     is_mo2_held = false;
-                    layer_off(2);
+                    if (to3_override_active) {
+                        layer_move(3);
+                        to3_override_active = false;
+                    } else {
+                        layer_off(2);
+                    }
                 }
                 is_mo2_held = false;
             }
@@ -189,6 +197,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
             break;
+        case TO(3):
+            if (is_mo2_held) {
+                layer_on(4);  // Temporarily activate Layer 4 instead
+                to3_override_active = true;  // Postpone TO(3) until MO(2) is released
+                return false;  // Block TO(3) for now
+            } else {
+                return true; // Allow TO(3) to be processed normally
+            }
     }
     return true;
 };
